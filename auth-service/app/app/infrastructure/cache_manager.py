@@ -3,6 +3,7 @@ from typing import Optional
 from redis.asyncio import Redis
 import urllib
 
+
 class CacheManager(ABC):
     def __init__(self, default_expiry: int = 300):  # Default expiry 5 minutes
         self.default_expiry = default_expiry
@@ -18,6 +19,7 @@ class CacheManager(ABC):
     def generate_cache_key(self, *args) -> str:
         encoded_args = [urllib.parse.quote_plus(str(arg)) for arg in args]
         return ":".join(encoded_args)
+
 
 class RedisCacheManager(CacheManager):
     def __init__(self, redis: Redis, default_expiry: int = 300):

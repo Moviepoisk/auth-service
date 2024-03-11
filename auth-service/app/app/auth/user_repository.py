@@ -13,7 +13,9 @@ class AbstractUserRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_email_or_login(self, identifier: str) -> Optional[UsersDbModel]:
+    async def get_user_by_email_or_login(
+        self, identifier: str
+    ) -> Optional[UsersDbModel]:
         pass
 
     @abstractmethod
@@ -45,7 +47,9 @@ class UserRepository(AbstractUserRepository):
         await self.db.refresh(new_user)
         return new_user
 
-    async def get_user_by_email_or_login(self, identifier: str) -> Optional[UsersDbModel]:
+    async def get_user_by_email_or_login(
+        self, identifier: str
+    ) -> Optional[UsersDbModel]:
         query = select(UsersDbModel).where(
             (UsersDbModel.email == identifier) | (UsersDbModel.login == identifier)
         )

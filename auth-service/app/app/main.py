@@ -9,12 +9,11 @@ from app.auth.init import create_roles, create_superuser
 from app.infrastructure.db.database import async_session
 
 app = FastAPI(
-    title='Movies Storage',
+    title="Movies Storage",
     docs_url="/api/openapi",
     openapi_url="/api/openapi.json",
     default_response_class=ORJSONResponse,
 )
-
 
 
 @app.on_event("startup")

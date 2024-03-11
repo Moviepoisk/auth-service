@@ -2,12 +2,13 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.auth_helpers import (authenticate_user,
-                                   register_new_user,
-                                   create_access_and_refresh_tokens,
-                                   refresh_user_tokens,
-                                   revoke_refresh_token
-                                   )
+from app.auth.auth_helpers import (
+    authenticate_user,
+    register_new_user,
+    create_access_and_refresh_tokens,
+    refresh_user_tokens,
+    revoke_refresh_token,
+)
 
 from app.infrastructure.db.database import get_session
 from app.infrastructure.encryption.session_key import get_session_key_async
@@ -22,42 +23,36 @@ OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
 @router.post("/tokens", response_model=Tokens)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ):
     user = await authenticate_user(
-        db=db,
-        email_or_login=form_data.username,
-        password=form_data.password
+        db=db, email_or_login=form_data.username, password=form_data.password
     )
-    tokens = await create_access_and_refresh_tokens(
-        db=db,
-        login=user.login
-    )
+    tokens = await create_access_and_refresh_tokens(db=db, login=user.login)
     return tokens
 
 
 @router.post("/refresh")
 async def refresh_access_and_refresh_tokens(
-    refresh_token_str: str = Body(...), 
-    db: AsyncSession = Depends(get_session)
+    refresh_token_str: str = Body(...), db: AsyncSession = Depends(get_session)
 ):
     tokens = await refresh_user_tokens(refresh_token_str, db)
     return tokens
+
 
 @router.post("/signup")
 async def register_user(
     user_data: UserCreate,
     db: AsyncSession = Depends(get_session),
-    session_key: bytes = Depends(get_session_key_async)
+    session_key: bytes = Depends(get_session_key_async),
 ):
     new_user_id = await register_new_user(db, user_data, session_key)
     return new_user_id
 
+
 @router.post("/logout")
 async def user_logout(
-    db: AsyncSession = Depends(get_session),
-    token: str = Depends(OAUTH2_SCHEME)
+    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
 ):
     await revoke_refresh_token(db, token)
     return "Logged out successfully"
-

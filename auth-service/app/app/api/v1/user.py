@@ -12,28 +12,30 @@ OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
 
 router = APIRouter()
 
+
 @router.post("/users/me", response_model=UserGet)
-async def read_users_me(db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)):
+async def read_users_me(
+    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
+):
     active_user = await get_current_session_user(db, token)
     return active_user
+
 
 @router.patch("/user_roles", response_model=UserCreate)
 async def update_user_role_endpoint(
     user_data: UserRoleUpdate = Body(...),
     db: AsyncSession = Depends(get_session),
-    _ = Depends(
-        role_required(
-        [settings.super_admin_role_name,
-        settings.admin_role_name]
-        )
+    _=Depends(
+        role_required([settings.super_admin_role_name, settings.admin_role_name])
     ),
 ):
     updated_user = await set_user_role(db, user_data.user_id, user_data.role_id)
     return updated_user
 
+
 # @router.patch("/user", response_model=UserGet)
 # async def update_login_and_password(
-#     user_update: UserCreate = Body(...), 
+#     user_update: UserCreate = Body(...),
 #     current_user: UserGet = Depends(get_current_active_user),
 #     db: AsyncSession = Depends(get_session),
 # ):
