@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from datetime import timedelta
-from app.schemas.auth import AccessTokenData, RefreshTokenData
-from jose import jwt, JWTError
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from jose import JWTError, jwt
+
 from app.core.config import settings
 from app.exceptions.exceptions import get_token_validation_exception
+from app.schemas.auth import AccessTokenData, RefreshTokenData
 
 
 class TokenStrategy(ABC):

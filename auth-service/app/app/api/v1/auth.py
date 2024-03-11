@@ -2,14 +2,10 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.auth_helpers import (
-    authenticate_user,
-    register_new_user,
-    create_access_and_refresh_tokens,
-    refresh_user_tokens,
-    revoke_refresh_token,
-)
-
+from app.auth.auth_helpers import (authenticate_user,
+                                   create_access_and_refresh_tokens,
+                                   refresh_user_tokens, register_new_user,
+                                   revoke_refresh_token,)
 from app.infrastructure.db.database import get_session
 from app.infrastructure.encryption.session_key import get_session_key_async
 from app.schemas.auth import Tokens

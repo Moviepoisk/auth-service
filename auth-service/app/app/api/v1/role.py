@@ -1,21 +1,13 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, Body
-from app.infrastructure.db.database import get_session
-from app.auth.role_helpers import (
-    role_required,
-    set_user_role,
-    create_role,
-    delete_role,
-    update_role,
-)
-from app.auth.role_helpers import get_all_roles
-from app.core.config import settings
-from app.schemas.role import RoleCreate, RoleGet, RoleUpdate
-from app.schemas.user import UserGet, UserCreate, UserRoleUpdate
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.config import settings
 from uuid import UUID
+
+from fastapi import APIRouter, Body, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.role_helpers import (create_role, delete_role, get_all_roles,
+                                   role_required, update_role,)
+from app.core.config import settings
+from app.infrastructure.db.database import get_session
+from app.schemas.role import RoleCreate, RoleGet, RoleUpdate
 
 router = APIRouter()
 

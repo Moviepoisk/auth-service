@@ -1,16 +1,17 @@
 from typing import Optional
-from fastapi import Depends
+from uuid import UUID
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.users import RoleDbModel
+
+from app.auth.auth_helpers import get_current_session_user
 from app.auth.role_repository import RoleRepositoryFactory
 from app.auth.user_repository import UserRepositoryFactory
-from app.auth.auth_helpers import get_current_session_user
 from app.infrastructure.db.database import get_session
+from app.models.users import RoleDbModel
+from app.schemas.role import RoleCreate, RoleGet, RoleUpdate
 from app.schemas.user import UserCreate
-from app.schemas.role import RoleGet, RoleCreate, RoleUpdate
-from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from uuid import UUID
 
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
 

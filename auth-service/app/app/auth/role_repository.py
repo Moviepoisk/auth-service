@@ -1,9 +1,11 @@
+import uuid
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.models.users import RoleDbModel, UsersDbModel
-import uuid
 
 
 # Abstract Repository for Role Operations

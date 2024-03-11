@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Optional
-from sqlalchemy import update, delete
-from app.models.users import RefreshTokenDbModel
+
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import datetime
+
+from app.models.users import RefreshTokenDbModel
 
 
 class AbstractRefreshTokenRepository(ABC):

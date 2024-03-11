@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-from sqlalchemy import update, delete
-from app.models.users import EncryptionKeysModel
+
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
+from app.models.users import EncryptionKeysModel
 
 
 class AbstractKeyStorageRepository(ABC):

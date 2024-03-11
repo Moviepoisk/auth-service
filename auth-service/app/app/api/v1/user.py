@@ -1,12 +1,13 @@
+from fastapi import APIRouter, Body, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, Depends, Body
-from app.infrastructure.db.database import get_session
-from app.schemas.user import UserGet, UserCreate, UserRoleUpdate
-from app.schemas.role import RoleGet, RoleCreate, RoleUpdate
-from app.core.config import settings
+
 from app.auth.auth_helpers import get_current_session_user
 from app.auth.role_helpers import role_required, set_user_role
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.core.config import settings
+from app.infrastructure.db.database import get_session
+from app.schemas.role import RoleCreate, RoleGet, RoleUpdate
+from app.schemas.user import UserCreate, UserGet, UserRoleUpdate
 
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
 

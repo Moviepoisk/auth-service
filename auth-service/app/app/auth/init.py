@@ -1,11 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.config import settings
-from app.auth.role_helpers import create_role, set_user_role
+
 from app.auth.auth_helpers import register_new_user
+from app.auth.role_helpers import create_role, set_user_role
+from app.auth.role_repository import RoleRepositoryFactory
+from app.auth.user_repository import UserRepositoryFactory
+from app.core.config import settings
 from app.schemas.role import RoleCreate
 from app.schemas.user import UserCreate
-from app.auth.user_repository import UserRepositoryFactory
-from app.auth.role_repository import RoleRepositoryFactory
 
 
 # создание базовых ролей

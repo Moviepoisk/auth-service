@@ -1,31 +1,26 @@
 # Import necessary modules and classes
-from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.exceptions.exceptions import (
-    get_incorrect_credentials_exception,
-    get_token_validation_exception,
-    get_user_not_found_exception,
-    get_user_already_exists,
-    get_database_error_exception,
-)
-from app.schemas.user import UserCreate, UserGet
-
-from app.auth.encryption_strategy import RSAEncryptor, AESEncryptor, EncryptedMessage
-from app.auth.user_repository import UserRepositoryFactory
-from app.auth.encryption_repository import KeyStorageRepositoryFactory
-from app.auth.encryption_strategy import (
-    RSAKeyPairGenerator,
-    get_session_key_async,
-    RSAEncryptor,
-    AESEncryptor,
-)
-from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
-from app.auth.token_repository import RefreshTokenRepositoryFactory
-from Crypto.PublicKey import RSA
-from datetime import timedelta, datetime
 import json
-from app.core.config import settings
+from datetime import datetime, timedelta
+from typing import Optional
+
+from Crypto.PublicKey import RSA
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.encryption_repository import KeyStorageRepositoryFactory
+from app.auth.encryption_strategy import (AESEncryptor, EncryptedMessage,
+                                          RSAEncryptor, RSAKeyPairGenerator,
+                                          get_session_key_async,)
+from app.auth.token_repository import RefreshTokenRepositoryFactory
+from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
+from app.auth.user_repository import UserRepositoryFactory
+from app.core.config import settings
+from app.exceptions.exceptions import (get_database_error_exception,
+                                       get_incorrect_credentials_exception,
+                                       get_token_validation_exception,
+                                       get_user_already_exists,
+                                       get_user_not_found_exception,)
+from app.schemas.user import UserCreate, UserGet
 
 
 async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
