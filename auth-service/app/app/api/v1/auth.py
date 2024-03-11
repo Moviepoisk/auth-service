@@ -7,7 +7,7 @@ from app.auth.auth_helpers import (authenticate_user,
                                    refresh_user_tokens, register_new_user,
                                    revoke_refresh_token,)
 from app.infrastructure.db.database import get_session
-from app.infrastructure.encryption.session_key import get_session_key_async
+from app.auth.encryption_strategy import get_session_key_async
 from app.schemas.auth import Tokens
 from app.schemas.user import UserCreate
 
