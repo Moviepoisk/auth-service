@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, Body
 from app.infrastructure.db.database import get_session
-from app.infrastructure.db.crud_roles import get_all_roles
 from app.auth.role_helpers import role_required, set_user_role, create_role, delete_role, update_role
+from app.auth.role_helpers import get_all_roles
 from app.core.config import settings
 from app.schemas.role import RoleCreate, RoleGet, RoleUpdate
 from app.schemas.user import UserGet, UserCreate, UserRoleUpdate
@@ -21,8 +21,7 @@ async def list_roles(
         settings.admin_role_name]
         )
     ),):
-    roles_query = await get_all_roles(db)
-    roles_list = [RoleGet.from_orm(role) for role in roles_query]  # Преобразование в Pydantic объекты
+    roles_list = await get_all_roles(db)
     return roles_list
 
 

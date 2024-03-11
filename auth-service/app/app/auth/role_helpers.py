@@ -88,3 +88,9 @@ async def update_role(db: AsyncSession, role_id: UUID, role_data: RoleUpdate)-> 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
     await role_repo.update_role(role_id, role_data)
     return role
+
+async def get_all_roles(db: AsyncSession) -> list[RoleGet]:
+    role_repo = RoleRepositoryFactory(db).get_repository()
+    roles = await role_repo.get_all_roles()
+    roles_list = [RoleGet.from_orm(role) for role in roles]  # Преобразование в Pydantic объекты
+    return roles_list
