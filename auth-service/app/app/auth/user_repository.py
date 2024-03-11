@@ -20,15 +20,15 @@ class AbstractUserRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: int) -> Optional[UsersDbModel]:
+    async def get_user_by_id(self, user_id: UUID) -> Optional[UsersDbModel]:
         pass
 
     @abstractmethod
-    async def update_user(self, user_id: int, **kwargs) -> Optional[UsersDbModel]:
+    async def update_user(self, user_id: UUID, **kwargs) -> Optional[UsersDbModel]:
         pass
 
     @abstractmethod
-    async def delete_user(self, user_id: int) -> bool:
+    async def delete_user(self, user_id: UUID) -> bool:
         pass
 
     @abstractmethod

@@ -7,7 +7,6 @@ from app.auth.auth_helpers import (authenticate_user,
                                    refresh_user_tokens, register_new_user,
                                    revoke_refresh_token,)
 from app.infrastructure.db.database import get_session
-from app.auth.encryption_strategy import get_session_key_async
 from app.schemas.auth import Tokens
 from app.schemas.user import UserCreate
 
@@ -40,15 +39,15 @@ async def refresh_access_and_refresh_tokens(
 async def register_user(
     user_data: UserCreate,
     db: AsyncSession = Depends(get_session),
-    session_key: bytes = Depends(get_session_key_async),
 ):
-    new_user_id = await register_new_user(db, user_data, session_key)
+    new_user_id = await register_new_user(db, user_data)
     return new_user_id
 
 
 @router.post("/logout")
 async def user_logout(
-    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
+    db: AsyncSession = Depends(get_session),
+    token: str = Depends(OAUTH2_SCHEME)
 ):
     await revoke_refresh_token(db, token)
     return "Logged out successfully"

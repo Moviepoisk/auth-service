@@ -27,6 +27,11 @@ class UserRoleUpdate(BaseModel):
     role_id: UUID
 
 
-class UserPasswordUpdate(BaseModel):
+class UserLoginPasswordUpdate(BaseModel): # форма обновления
     id: UUID
+    login: str
     password: str
+
+class UserLoginPasswordUpdateDb(BaseModel):
+    login: str
+    encrypted_password: str

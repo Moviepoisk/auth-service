@@ -20,7 +20,7 @@ from app.exceptions.exceptions import (get_database_error_exception,
                                        get_token_validation_exception,
                                        get_user_already_exists,
                                        get_user_not_found_exception,)
-from app.schemas.user import UserCreate, UserGet
+from app.schemas.user import UserCreate, UserGet, UserLoginPasswordUpdate, UserLoginPasswordUpdateDb
 
 
 async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
@@ -224,3 +224,64 @@ async def get_current_session_user(db: AsyncSession, acesss_token: str):
     if not user:
         raise get_user_not_found_exception()
     return UserGet.from_orm(user)
+
+
+async def update_user_login_and_password(
+    db: AsyncSession, user_update: UserLoginPasswordUpdate, token: str
+) -> UserGet:
+    current_session_user = await get_current_session_user(db, token)
+    if not current_session_user:
+        # TODO не авторизован
+        raise get_user_not_found_exception()
+
+    if current_session_user.id != user_update.id:
+        # TODO нет доступа к этому пользователю
+        raise get_user_not_found_exception()
+    
+    # Получаем репозиторий для работы с пользователями и ключами
+    user_repo = UserRepositoryFactory(db).get_repository()
+    encryption_repo = KeyStorageRepositoryFactory(db).get_repository()
+
+    # Получаем пользователя по ID
+    user = await user_repo.get_user_by_id(user_update.id)
+    if not user:
+        raise get_user_not_found_exception()
+
+    # Генерируем новый сессионный ключ
+    session_key = await get_session_key_async()
+
+    # Генерируем пару ключей RSA
+    key_generator = RSAKeyPairGenerator()
+    private_key, public_key = await key_generator.generate_key_pair()
+
+    # Шифруем сессионный ключ публичным ключом RSA
+    session_key_encryptor = RSAEncryptor()
+    encrypted_session_key = await session_key_encryptor.encrypt_session_key(session_key, public_key)
+
+    # Шифруем новый пароль сессионным ключом
+    data_encryptor = AESEncryptor()
+    encrypted_password_message = await data_encryptor.encrypt(user_update.password, session_key)
+
+    # Сериализуем зашифрованный пароль в JSON
+    encrypted_password = json.dumps({
+        "nonce": encrypted_password_message.nonce.hex(),
+        "digest": encrypted_password_message.digest.hex(),
+        "message": encrypted_password_message.message.hex(),
+    })
+
+    # Обновляем логин и зашифрованный пароль пользователя
+    updated_user = await user_repo.update_user(
+        user_update.id, login=user_update.login, encrypted_password=encrypted_password)
+
+
+    # Обновляем ключи шифрования пользователя
+    await encryption_repo.save_keys(
+        user_update.id,
+        private_key.export_key(),
+        public_key.export_key(),
+        encrypted_session_key
+    )
+
+    # Возвращаем обновленные данные пользователя
+    updated_user = await user_repo.get_user_by_id(user_update.id)
+    return UserGet.from_orm(updated_user)
