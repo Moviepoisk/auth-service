@@ -5,10 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.auth_helpers import (authenticate_user,
                                    create_access_and_refresh_tokens,
                                    refresh_user_tokens, register_new_user,
-                                   revoke_refresh_token,)
+                                   revoke_refresh_token,
+                                   get_login_history)
 from app.infrastructure.db.database import get_session
 from app.schemas.auth import Tokens
 from app.schemas.user import UserCreate
+from app.schemas.login_history import LoginHistoryGet
 
 router = APIRouter()
 
@@ -26,6 +28,15 @@ async def login_for_access_token(
     tokens = await create_access_and_refresh_tokens(db=db, login=user.login)
     return tokens
 
+
+@router.post("login_history")
+async def login_history(
+    db: AsyncSession = Depends(get_session),
+    token: str = Depends(OAUTH2_SCHEME)
+):
+    login_history = await get_login_history(db, token)
+
+    return login_history
 
 @router.post("/refresh")
 async def refresh_access_and_refresh_tokens(

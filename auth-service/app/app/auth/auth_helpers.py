@@ -1,16 +1,11 @@
 # Import necessary modules and classes
-import json
 from datetime import datetime, timedelta
 from typing import Optional
 
-from Crypto.PublicKey import RSA
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.encryption_repository import KeyStorageRepositoryFactory
-from app.auth.encryption_strategy import (AESEncryptor, EncryptedMessage,
-                                          RSAEncryptor, RSAKeyPairGenerator,
-                                          get_session_key_async,)
 from app.auth.token_repository import RefreshTokenRepositoryFactory
 from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
 from app.auth.user_repository import UserRepositoryFactory
@@ -20,9 +15,14 @@ from app.exceptions.exceptions import (get_database_error_exception,
                                        get_token_validation_exception,
                                        get_user_already_exists,
                                        get_user_not_found_exception,)
-from app.schemas.user import UserCreate, UserGet, UserLoginPasswordUpdate, UserLoginPasswordUpdateDb
-
+from app.schemas.user import UserCreate, UserGet, UserLoginPasswordUpdate
 from app.auth.encryption_facade import EncryptionFacade
+from app.auth.login_history_repository import LoginHistoryRepositoryFactory
+
+async def get_client_details(request: Request):
+    client_host = request.client.host
+    user_agent = request.headers.get('User-Agent')
+    return {"ip": client_host, "user_agent": user_agent}
 
 async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     user_repo = UserRepositoryFactory(db).get_repository()
@@ -57,6 +57,12 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     )
     if not new_keys:
         raise get_database_error_exception()
+    
+    login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    await login_history_repo.create_login_history(
+        user_id=new_user.id
+    )
+
     return new_user.id
 
 
@@ -88,6 +94,10 @@ async def authenticate_user(db: AsyncSession, email_or_login: str, password: str
     if decrypted_password != password:
         # Handle authentication failure
         raise get_incorrect_credentials_exception()
+    
+
+    login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    await login_history_repo.create_login_history(user.id, ip='127.0.0.1', user_agent='test')
 
     return UserGet.from_orm(user)
 
@@ -229,4 +239,22 @@ async def update_user_login_and_password(
 
     # Возвращаем обновленные данные пользователя
     updated_user = await user_repo.get_user_by_id(user.id)
+
+    login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    await login_history_repo.create_login_history(user_id=user.id, ip="127.0.0.1", user_agent="test")
+
     return UserGet.from_orm(updated_user)
+
+
+async def get_login_history(db: AsyncSession, token: str):
+    access_token = await AccessTokenStrategy().verify_token(token)
+    if not access_token:
+        raise get_user_not_found_exception()
+    user_repo = UserRepositoryFactory(db).get_repository()
+    user = await user_repo.get_user_by_email_or_login(access_token.login)
+    if not user:
+        raise get_user_not_found_exception()
+    
+    login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    login_history = await login_history_repo.get_login_history_by_user_id(user.id)
+    return login_history
