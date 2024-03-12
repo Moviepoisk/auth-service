@@ -33,14 +33,12 @@ async def update_user_role_endpoint(
     return updated_user
 
 
-@router.patch("/user", response_model=UserGet)
+@router.patch("/user")#, response_model=UserGet)
 async def update_login_and_password(
     user_update: UserLoginPasswordUpdate = Body(...),
     db: AsyncSession = Depends(get_session),
     token: str = Depends(OAUTH2_SCHEME)
 ):
     # Обновление логина и пароля пользователя
-    updated_user = await update_user_login_and_password(
-        db, user_update, token
-    )
+    updated_user = await update_user_login_and_password(db, user_update, token)
     return updated_user

@@ -33,9 +33,6 @@ class UsersDbModel(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     encrypted_password = Column(Text, nullable=False)
-    # encrypted_session_key = Column(LargeBinary)
-    # public_key = Column(LargeBinary) # for test only
-    # private_key = Column(LargeBinary) # for test only
     created_at = Column(DateTime, default=datetime.utcnow)
     role_id = Column(
         UUID(as_uuid=True), ForeignKey("roles.id", ondelete="CASCADE"), nullable=True

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
+from uuid import UUID
 
 from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,15 +21,15 @@ class AbstractKeyStorageRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_keys(self, user_id: str) -> Optional[EncryptionKeysModel]:
+    async def get_keys(self, user_id: UUID) -> Optional[EncryptionKeysModel]:
         pass
 
     @abstractmethod
-    async def revoke_keys(self, user_id: str) -> None:
+    async def revoke_keys(self, user_id: UUID) -> None:
         pass
 
     @abstractmethod
-    async def delete_keys(self, user_id: str) -> None:
+    async def delete_keys(self, user_id: UUID) -> None:
         pass
 
 
@@ -38,7 +39,7 @@ class KeyStorageRepository(AbstractKeyStorageRepository):
 
     async def save_keys(
         self,
-        user_id: str,
+        user_id: UUID,
         private_key: bytes,
         public_key: bytes,
         encrypted_session_key: bytes,
@@ -54,14 +55,14 @@ class KeyStorageRepository(AbstractKeyStorageRepository):
         await self.db.refresh(user_key)
         return user_key
 
-    async def get_keys(self, user_id: str) -> Optional[EncryptionKeysModel]:
+    async def get_keys(self, user_id: UUID) -> Optional[EncryptionKeysModel]:
         result = await self.db.execute(
             select(EncryptionKeysModel).filter_by(user_id=user_id)
         )
         user_key = result.scalars().first()
         return user_key
 
-    async def revoke_keys(self, user_id: str) -> None:
+    async def revoke_keys(self, user_id: UUID) -> None:
         await self.db.execute(
             update(EncryptionKeysModel)
             .where(EncryptionKeysModel.user_id == user_id)
@@ -69,7 +70,7 @@ class KeyStorageRepository(AbstractKeyStorageRepository):
         )
         await self.db.commit()
 
-    async def delete_keys(self, user_id: str) -> None:
+    async def delete_keys(self, user_id: UUID) -> None:
         await self.db.execute(
             delete(EncryptionKeysModel).where(EncryptionKeysModel.user_id == user_id)
         )
@@ -82,3 +83,7 @@ class KeyStorageRepositoryFactory:
 
     def get_repository(self) -> AbstractKeyStorageRepository:
         return KeyStorageRepository(self.db)
+
+
+
+
