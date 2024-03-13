@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.encryption_repository import KeyStorageRepositoryFactory
@@ -60,14 +60,12 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
     await login_history_repo.create_login_history(
-        user_id=new_user.id
+        user_id=new_user.id, ip='127.0.0.1', user_agent='test'
     )
-
     return new_user.id
 
 
-async def authenticate_user(db: AsyncSession, email_or_login: str, password: str
-) -> Optional[UserGet]:
+async def authenticate_user(db: AsyncSession, email_or_login: str, password: str) -> Optional[UserGet]:
     user_repo = UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(email_or_login)
     if not user:
@@ -95,7 +93,6 @@ async def authenticate_user(db: AsyncSession, email_or_login: str, password: str
         # Handle authentication failure
         raise get_incorrect_credentials_exception()
     
-
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
     await login_history_repo.create_login_history(user.id, ip='127.0.0.1', user_agent='test')
 

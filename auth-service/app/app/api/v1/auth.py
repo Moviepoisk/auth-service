@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +19,7 @@ OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
 
 @router.post("/tokens", response_model=Tokens)
 async def login_for_access_token(
+    request=Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_session),
 ):
