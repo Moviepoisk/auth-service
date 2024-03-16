@@ -12,8 +12,8 @@ from app.infrastructure.db.database import get_session
 from app.schemas.user import (
     UserCreate,
     UserGet,
-    UserRoleUpdate,
     UserLoginPasswordUpdate,
+    UserRoleUpdate,
 )
 
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")

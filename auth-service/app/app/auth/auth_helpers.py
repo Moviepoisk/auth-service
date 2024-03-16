@@ -2,10 +2,12 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import HTTPException, Request, Depends
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.encryption_facade import EncryptionFacade
 from app.auth.encryption_repository import KeyStorageRepositoryFactory
+from app.auth.login_history_repository import LoginHistoryRepositoryFactory
 from app.auth.token_repository import RefreshTokenRepositoryFactory
 from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
 from app.auth.user_repository import UserRepositoryFactory
@@ -18,8 +20,6 @@ from app.exceptions.exceptions import (
     get_user_not_found_exception,
 )
 from app.schemas.user import UserCreate, UserGet, UserLoginPasswordUpdate
-from app.auth.encryption_facade import EncryptionFacade
-from app.auth.login_history_repository import LoginHistoryRepositoryFactory
 
 
 async def get_client_details(request: Request):

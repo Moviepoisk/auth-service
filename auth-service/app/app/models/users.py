@@ -1,14 +1,15 @@
-from datetime import datetime
 import uuid
+from datetime import datetime
+
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
-    String,
     ForeignKey,
     Index,
     LargeBinary,
+    String,
     Text,
-    Boolean,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base

@@ -1,13 +1,20 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
+from pydantic import BaseModel, Field
+
+
 class LoginHistoryGet(BaseModel):
-    id: Optional[UUID] = Field(default=None, description="Уникальный идентификатор истории входа")
+    id: Optional[UUID] = Field(
+        default=None, description="Уникальный идентификатор истории входа"
+    )
     ip: str = Field(..., description="IP-адрес пользователя")
     user_agent: str = Field(..., description="User-Agent пользователя")
-    created_at: Optional[datetime] = Field(default=None, description="Дата и время создания записи")
+    created_at: Optional[datetime] = Field(
+        default=None, description="Дата и время создания записи"
+    )
+
     class Config:
         from_attributes = True
         schema_extra = {

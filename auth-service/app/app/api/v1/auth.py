@@ -5,15 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.auth_helpers import (
     authenticate_user,
     create_access_and_refresh_tokens,
+    get_login_history,
     refresh_user_tokens,
     register_new_user,
     revoke_refresh_token,
-    get_login_history,
 )
 from app.infrastructure.db.database import get_session
 from app.schemas.auth import Tokens
-from app.schemas.user import UserCreate
 from app.schemas.login_history import LoginHistoryGet
+from app.schemas.user import UserCreate
 
 router = APIRouter()
 

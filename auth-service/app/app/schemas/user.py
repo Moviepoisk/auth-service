@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
@@ -27,9 +28,10 @@ class UserRoleUpdate(BaseModel):
     role_id: UUID
 
 
-class UserLoginPasswordUpdate(BaseModel): # форма обновления
+class UserLoginPasswordUpdate(BaseModel):  # форма обновления
     login: str
     password: str
+
 
 class UserLoginPasswordUpdateDb(BaseModel):
     login: str

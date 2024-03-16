@@ -2,11 +2,11 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from redis.asyncio import Redis
 
-from app.core.config import settings
-from app.infrastructure.redis import redis
 from app.api.v1.api import api_router
 from app.auth.init import create_roles, create_superuser
+from app.core.config import settings
 from app.infrastructure.db.database import async_session
+from app.infrastructure.redis import redis
 
 app = FastAPI(
     title="Movies Storage",
