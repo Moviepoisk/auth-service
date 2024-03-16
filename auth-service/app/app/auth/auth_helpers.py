@@ -10,19 +10,23 @@ from app.auth.token_repository import RefreshTokenRepositoryFactory
 from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
 from app.auth.user_repository import UserRepositoryFactory
 from app.core.config import settings
-from app.exceptions.exceptions import (get_database_error_exception,
-                                       get_incorrect_credentials_exception,
-                                       get_token_validation_exception,
-                                       get_user_already_exists,
-                                       get_user_not_found_exception,)
+from app.exceptions.exceptions import (
+    get_database_error_exception,
+    get_incorrect_credentials_exception,
+    get_token_validation_exception,
+    get_user_already_exists,
+    get_user_not_found_exception,
+)
 from app.schemas.user import UserCreate, UserGet, UserLoginPasswordUpdate
 from app.auth.encryption_facade import EncryptionFacade
 from app.auth.login_history_repository import LoginHistoryRepositoryFactory
 
+
 async def get_client_details(request: Request):
     client_host = request.client.host
-    user_agent = request.headers.get('User-Agent')
+    user_agent = request.headers.get("User-Agent")
     return {"ip": client_host, "user_agent": user_agent}
+
 
 async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     user_repo = UserRepositoryFactory(db).get_repository()
@@ -32,40 +36,46 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     user = await user_repo.get_user_by_email_or_login(user_data.email)
     if user:
         raise get_user_already_exists("User with this email already exists")
-    
+
     encryption_facade = EncryptionFacade()
     generated_keys = await encryption_facade.generate_keys()
-    encrypted_password = await encryption_facade.encrypt_data(user_data.password, generated_keys['session_key'])
+    encrypted_password = await encryption_facade.encrypt_data(
+        user_data.password, generated_keys["session_key"]
+    )
 
     # Создание и сохранение нового пользователя в базу данных
-    new_user = await user_repo.create_user({
+    new_user = await user_repo.create_user(
+        {
             "login": user_data.login,
             "email": user_data.email,
             "first_name": user_data.first_name,
             "last_name": user_data.last_name,
             "encrypted_password": encrypted_password,
-    })
+        }
+    )
     if not new_user:
         raise get_database_error_exception()
 
     keys_repo = KeyStorageRepositoryFactory(db).get_repository()
     new_keys = await keys_repo.save_keys(
         user_id=new_user.id,
-        private_key=generated_keys['private_key'].export_key(),
-        public_key=generated_keys['public_key'].export_key(),
-        encrypted_session_key=generated_keys['encrypted_session_key']
+        private_key=generated_keys["private_key"].export_key(),
+        public_key=generated_keys["public_key"].export_key(),
+        encrypted_session_key=generated_keys["encrypted_session_key"],
     )
     if not new_keys:
         raise get_database_error_exception()
-    
+
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
     await login_history_repo.create_login_history(
-        user_id=new_user.id, ip='127.0.0.1', user_agent='test'
+        user_id=new_user.id, ip="127.0.0.1", user_agent="test"
     )
     return new_user.id
 
 
-async def authenticate_user(db: AsyncSession, email_or_login: str, password: str) -> Optional[UserGet]:
+async def authenticate_user(
+    db: AsyncSession, email_or_login: str, password: str
+) -> Optional[UserGet]:
     user_repo = UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(email_or_login)
     if not user:
@@ -87,14 +97,16 @@ async def authenticate_user(db: AsyncSession, email_or_login: str, password: str
     decrypted_password = await encryption_facade.decrypt_data(
         user.encrypted_password, decrypted_session_key
     )
-    
+
     # Compare the provided password with the decrypted password
     if decrypted_password != password:
         # Handle authentication failure
         raise get_incorrect_credentials_exception()
-    
+
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
-    await login_history_repo.create_login_history(user.id, ip='127.0.0.1', user_agent='test')
+    await login_history_repo.create_login_history(
+        user.id, ip="127.0.0.1", user_agent="test"
+    )
 
     return UserGet.from_orm(user)
 
@@ -199,7 +211,7 @@ async def update_user_login_and_password(
     if not access_token:
         # TODO не авторизован exception
         raise get_user_not_found_exception()
-    
+
     # Получаем пользователя по ID которого будем обновлять
     user = await user_repo.get_user_by_email_or_login(access_token.login)
     if not user:
@@ -211,24 +223,24 @@ async def update_user_login_and_password(
 
     encryption_facade = EncryptionFacade()
     generated_keys = await encryption_facade.generate_keys()
-    encrypted_password = await encryption_facade.encrypt_data(user_update.password, generated_keys['session_key'])
+    encrypted_password = await encryption_facade.encrypt_data(
+        user_update.password, generated_keys["session_key"]
+    )
 
     # критически важная зона!
     # TODO проверить работу db перед обновлением данных
     # Обновляем логин и зашифрованный пароль пользователя
     updated_user = await user_repo.update_user(
-        user.id,
-        login=user_update.login,
-        encrypted_password=encrypted_password
+        user.id, login=user_update.login, encrypted_password=encrypted_password
     )
     keys_repo = KeyStorageRepositoryFactory(db).get_repository()
     await keys_repo.delete_keys(user.id)
     # Обновляем ключи шифрования пользователя
     new_keys = await keys_repo.save_keys(
         user_id=user.id,
-        private_key=generated_keys['private_key'].export_key(),
-        public_key=generated_keys['public_key'].export_key(),
-        encrypted_session_key=generated_keys['encrypted_session_key']
+        private_key=generated_keys["private_key"].export_key(),
+        public_key=generated_keys["public_key"].export_key(),
+        encrypted_session_key=generated_keys["encrypted_session_key"],
     )
     if not new_keys:
         raise get_database_error_exception()
@@ -238,7 +250,9 @@ async def update_user_login_and_password(
     updated_user = await user_repo.get_user_by_id(user.id)
 
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
-    await login_history_repo.create_login_history(user_id=user.id, ip="127.0.0.1", user_agent="test")
+    await login_history_repo.create_login_history(
+        user_id=user.id, ip="127.0.0.1", user_agent="test"
+    )
 
     return UserGet.from_orm(updated_user)
 
@@ -251,7 +265,7 @@ async def get_login_history(db: AsyncSession, token: str):
     user = await user_repo.get_user_by_email_or_login(access_token.login)
     if not user:
         raise get_user_not_found_exception()
-    
+
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
     login_history = await login_history_repo.get_login_history_by_user_id(user.id)
     return login_history

@@ -3,8 +3,13 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.role_helpers import (create_role, delete_role, get_all_roles,
-                                   role_required, update_role,)
+from app.auth.role_helpers import (
+    create_role,
+    delete_role,
+    get_all_roles,
+    role_required,
+    update_role,
+)
 from app.core.config import settings
 from app.infrastructure.db.database import get_session
 from app.schemas.role import RoleCreate, RoleGet, RoleUpdate

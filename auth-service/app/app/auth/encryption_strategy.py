@@ -107,8 +107,6 @@ class AESEncryptor(DataEncryptor):
         return data.decode()
 
 
-
-
 # Пример использования
 # async def main():
 #     session_key = await get_session_key_async()

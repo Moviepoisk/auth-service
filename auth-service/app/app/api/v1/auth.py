@@ -2,11 +2,14 @@ from fastapi import APIRouter, Body, Depends, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.auth_helpers import (authenticate_user,
-                                   create_access_and_refresh_tokens,
-                                   refresh_user_tokens, register_new_user,
-                                   revoke_refresh_token,
-                                   get_login_history)
+from app.auth.auth_helpers import (
+    authenticate_user,
+    create_access_and_refresh_tokens,
+    refresh_user_tokens,
+    register_new_user,
+    revoke_refresh_token,
+    get_login_history,
+)
 from app.infrastructure.db.database import get_session
 from app.schemas.auth import Tokens
 from app.schemas.user import UserCreate
@@ -32,12 +35,12 @@ async def login_for_access_token(
 
 @router.post("login_history")
 async def login_history(
-    db: AsyncSession = Depends(get_session),
-    token: str = Depends(OAUTH2_SCHEME)
+    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
 ):
     login_history = await get_login_history(db, token)
 
     return login_history
+
 
 @router.post("/refresh")
 async def refresh_access_and_refresh_tokens(
@@ -58,8 +61,7 @@ async def register_user(
 
 @router.post("/logout")
 async def user_logout(
-    db: AsyncSession = Depends(get_session),
-    token: str = Depends(OAUTH2_SCHEME)
+    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
 ):
     await revoke_refresh_token(db, token)
     return "Logged out successfully"

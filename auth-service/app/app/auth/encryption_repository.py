@@ -83,7 +83,3 @@ class KeyStorageRepositoryFactory:
 
     def get_repository(self) -> AbstractKeyStorageRepository:
         return KeyStorageRepository(self.db)
-
-
-
-
