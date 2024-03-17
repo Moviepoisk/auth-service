@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login History</title>
+</head>
+<body>
+    <h2>Login History</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Created At</th>
+            <th>User ID</th>
+            <th>User Agent</th>
+            <th>IP Address</th>
+        </tr>
+        {% for record in login_history %}
+        <tr>
+            <td>{{ record.id }}</td>
+            <td>{{ record.created_at }}</td>
+            <td>{{ record.user_id }}</td>
+            <td>{{ record.user_agent }}</td>
+            <td>{{ record.ip }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

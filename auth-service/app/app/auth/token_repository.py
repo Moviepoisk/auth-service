@@ -96,7 +96,7 @@ class RefreshTokenRepository(AbstractRefreshTokenRepository):
             .where(RefreshTokenDbModel.id == id)
             .values(revoked=True)
         )
-        await self._invalidate_cache(id)
+        await self._invalidate_cache(prefix_key=self.key_prefix_id, key=id)
         await self.db.commit()
 
     async def delete_refresh_token(self, id: UUID) -> None:
