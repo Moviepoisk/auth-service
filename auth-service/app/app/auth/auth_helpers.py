@@ -29,7 +29,7 @@ async def get_client_details(request: Request):
 
 
 async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(user_data.login)
     if user:
         raise get_user_already_exists("User with this login already exists")
@@ -76,7 +76,7 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
 async def authenticate_user(
     db: AsyncSession, email_or_login: str, password: str
 ) -> Optional[UserGet]:
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(email_or_login)
     if not user:
         raise get_user_not_found_exception()
@@ -113,7 +113,7 @@ async def authenticate_user(
 
 async def create_access_and_refresh_tokens(db: AsyncSession, login: str):
     # Assuming you have a method to get the user by login
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(login)
     if not user:
         raise get_user_not_found_exception()
@@ -170,7 +170,7 @@ async def revoke_refresh_token(db: AsyncSession, acesss_token: str):
     if not acesss_token_verefied:
         raise get_token_validation_exception()
 
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     # Получаем из базы данных пользователя с указанным логином
     user = await user_repo.get_user_by_email_or_login(acesss_token_verefied.login)
     if not user:
@@ -191,7 +191,7 @@ async def get_current_session_user(db: AsyncSession, acesss_token: str):
     if not acesss_token_verefied:
         raise HTTPException(status_code=401, detail="Invalid access token")
 
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     # Получаем из базы данных пользователя с указанным логином
     user = await user_repo.get_user_by_email_or_login(acesss_token_verefied.login)
     if not user:
@@ -202,8 +202,6 @@ async def get_current_session_user(db: AsyncSession, acesss_token: str):
 async def update_user_login_and_password(
     db: AsyncSession, user_update: UserLoginPasswordUpdate, token: str
 ) -> UserGet:
-    user_repo = UserRepositoryFactory(db).get_repository()
-    refresh_token_repo = RefreshTokenRepositoryFactory(db).get_repository()
     acces_token_strategy = AccessTokenStrategy()
     refresh_token_strategy = RefreshTokenStrategy()
 
@@ -211,6 +209,9 @@ async def update_user_login_and_password(
     if not access_token:
         # TODO не авторизован exception
         raise get_user_not_found_exception()
+    
+    user_repo = await UserRepositoryFactory(db).get_repository()
+    refresh_token_repo = RefreshTokenRepositoryFactory(db).get_repository()
 
     # Получаем пользователя по ID которого будем обновлять
     user = await user_repo.get_user_by_email_or_login(access_token.login)
@@ -261,7 +262,7 @@ async def get_login_history(db: AsyncSession, token: str):
     access_token = await AccessTokenStrategy().verify_token(token)
     if not access_token:
         raise get_user_not_found_exception()
-    user_repo = UserRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(access_token.login)
     if not user:
         raise get_user_not_found_exception()

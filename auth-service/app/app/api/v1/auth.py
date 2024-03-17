@@ -12,19 +12,14 @@ from app.auth.auth_helpers import (
 )
 from app.infrastructure.db.database import get_session
 from app.schemas.auth import Tokens
-from app.schemas.login_history import LoginHistoryGet
 from app.schemas.user import UserCreate
-
 router = APIRouter()
 
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
-
-
 @router.post("/tokens", response_model=Tokens)
 async def login_for_access_token(
-    request=Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_session)
 ):
     user = await authenticate_user(
         db=db, email_or_login=form_data.username, password=form_data.password
@@ -33,12 +28,11 @@ async def login_for_access_token(
     return tokens
 
 
-@router.post("login_history")
+@router.post("/login_history")
 async def login_history(
     db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
 ):
     login_history = await get_login_history(db, token)
-
     return login_history
 
 

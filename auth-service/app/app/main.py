@@ -7,6 +7,8 @@ from app.auth.init import create_roles, create_superuser
 from app.core.config import settings
 from app.infrastructure.db.database import async_session
 from app.infrastructure.redis import redis
+from app.schemas.role import RoleCreate
+
 
 app = FastAPI(
     title="Movies Storage",
@@ -15,14 +17,32 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
-
+roles = [
+        RoleCreate(
+            name=settings.super_admin_role_name,
+            description=settings.super_admin_role_description,
+        ),
+        RoleCreate(
+            name=settings.admin_role_name, description=settings.admin_role_description
+        ),
+        RoleCreate(
+            name=settings.user_role_name, description=settings.user_role_description
+        ),
+        RoleCreate(
+            name=settings.subscriber_role_name,
+            description=settings.subscriber_role_description,
+        ),
+        RoleCreate(
+            name=settings.guest_role_name, description=settings.guest_role_description
+        ),
+    ]
 @app.on_event("startup")
 async def startup():
-    async with async_session() as db:  # Предполагается, что async_session это ваша функция получения сессии
-        await create_roles(db)
+    redis.redis = Redis(host=settings.redis_host, port=settings.redis_port, db=0, decode_responses=True)
+    async with async_session() as db:
+        await create_roles(db, roles)
         await create_superuser(db)
-
-    redis.redis = Redis(host=settings.redis_host, port=settings.redis_port)
+    
 
 
 @app.on_event("shutdown")

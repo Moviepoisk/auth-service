@@ -25,6 +25,14 @@ class RoleDbModel(Base):
     description = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "name": self.name,
+            "description": self.description,
+            "created_at": self.created_at.isoformat(),
+        }
+
 
 class UsersDbModel(Base):
     __tablename__ = "users"
@@ -41,6 +49,18 @@ class UsersDbModel(Base):
     role = relationship("RoleDbModel", back_populates="users")
     login_histories = relationship("LoginHistoryDbModel", back_populates="user")
 
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "email": self.email,
+            "login": self.login,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "encrypted_password": self.encrypted_password,
+            "created_at": self.created_at.isoformat(),
+            "role_id": str(self.role_id) if self.role_id else None,
+        }
+
 
 class LoginHistoryDbModel(Base):
     __tablename__ = "login_history"
@@ -50,6 +70,15 @@ class LoginHistoryDbModel(Base):
     user_agent = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("UsersDbModel", back_populates="login_histories")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "ip": self.ip,
+            "user_agent": self.user_agent,
+            "created_at": self.created_at.isoformat(),
+        }
 
 
 class RefreshTokenDbModel(Base):
@@ -63,6 +92,16 @@ class RefreshTokenDbModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)  # Время создания токена
     revoked = Column(Boolean, default=False)  # Статус отзыва токена
     user = relationship("UsersDbModel", back_populates="refresh_tokens")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "token": self.token,
+            "user_id": str(self.user_id),
+            "expires_at": self.expires_at.isoformat(),
+            "created_at": self.created_at.isoformat(),
+            "revoked": self.revoked,
+        }
 
 
 class EncryptionKeysModel(Base):
@@ -80,6 +119,17 @@ class EncryptionKeysModel(Base):
 
     # Relationship to the UsersDbModel to access the user information
     user = relationship("UsersDbModel", back_populates="encryption_keys")
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "private_key": self.private_key,
+            "public_key": self.public_key,
+            "encrypted_session_key": self.encrypted_session_key,
+            "revoked": self.revoked,
+            "created_at": self.created_at.isoformat(),
+        }
 
 
 # Back-populates fields

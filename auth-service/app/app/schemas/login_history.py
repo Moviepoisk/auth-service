@@ -17,7 +17,7 @@ class LoginHistoryGet(BaseModel):
 
     class Config:
         from_attributes = True
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "user_id": "d550a0d2-23d2-4a68-bd1f-3b6e7b1e55e1",
                 "ip": "192.168.1.1",
