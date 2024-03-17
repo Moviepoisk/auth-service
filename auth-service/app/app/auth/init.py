@@ -10,7 +10,7 @@ from app.schemas.user import UserCreate
 
 # создание базовых ролей
 async def create_roles(db: AsyncSession, roles: list[RoleCreate]) -> None:
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     for role_data in roles:
         role = await role_repo.get_role_by_name(role_data.name)
         if not role:
@@ -28,7 +28,7 @@ async def create_superuser(db: AsyncSession) -> None:
     )
     user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(super_admin_data.login)
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     role = await role_repo.get_role_by_name(settings.super_admin_role_name)
     if not user:
         await register_new_user(db, super_admin_data)

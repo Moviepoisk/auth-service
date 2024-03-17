@@ -22,7 +22,7 @@ async def get_current_session_user_role(
     user = await get_current_session_user(db, token)
     if not user:
         return None
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     role = await role_repo.get_role_by_user_id(user.id)
     return role
 
@@ -43,8 +43,8 @@ def role_required(allowed_roles: list[str]):
 async def set_user_role(
     db: AsyncSession, user_id: UUID, role_id: UUID
 ) -> Optional[UserCreate]:
-    role_repo = RoleRepositoryFactory(db).get_repository()
-    user_repo = UserRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
+    user_repo = await UserRepositoryFactory(db).get_repository()
 
     # Fetch the user to ensure it exists
     user = await user_repo.get_user_by_id(user_id)
@@ -72,7 +72,7 @@ async def set_user_role(
 
 
 async def create_role(db: AsyncSession, role_data: RoleCreate) -> Optional[RoleGet]:
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
 
     # Fetch the new role to ensure it not exists
     role = await role_repo.get_role_by_name(role_data.name)
@@ -89,7 +89,7 @@ async def create_role(db: AsyncSession, role_data: RoleCreate) -> Optional[RoleG
 
 
 async def delete_role(db: AsyncSession, role_id: UUID) -> Optional[RoleGet]:
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     role = await role_repo.get_role_by_id(role_id)
     if not role:
         raise HTTPException(
@@ -102,7 +102,7 @@ async def delete_role(db: AsyncSession, role_id: UUID) -> Optional[RoleGet]:
 async def update_role(
     db: AsyncSession, role_id: UUID, role_data: RoleUpdate
 ) -> Optional[RoleGet]:
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     role = await role_repo.get_role_by_id(role_id)
     if not role:
         raise HTTPException(
@@ -113,7 +113,7 @@ async def update_role(
 
 
 async def get_all_roles(db: AsyncSession) -> list[RoleGet]:
-    role_repo = RoleRepositoryFactory(db).get_repository()
+    role_repo = await RoleRepositoryFactory(db).get_repository()
     roles = await role_repo.get_all_roles()
     roles_list = [
         RoleGet.from_orm(role) for role in roles

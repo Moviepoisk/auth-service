@@ -56,7 +56,7 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
     if not new_user:
         raise get_database_error_exception()
 
-    keys_repo = KeyStorageRepositoryFactory(db).get_repository()
+    keys_repo = await KeyStorageRepositoryFactory(db).get_repository()
     new_keys = await keys_repo.save_keys(
         user_id=new_user.id,
         private_key=generated_keys["private_key"].export_key(),
@@ -81,7 +81,7 @@ async def authenticate_user(
     if not user:
         raise get_user_not_found_exception()
     # инициализировать encryption_repository
-    encryption_repository = KeyStorageRepositoryFactory(db).get_repository()
+    encryption_repository = await KeyStorageRepositoryFactory(db).get_repository()
     # получим ключи
     user_keys = await encryption_repository.get_keys(user.id)
     if not user_keys:
@@ -134,7 +134,7 @@ async def create_access_and_refresh_tokens(db: AsyncSession, login: str):
     )
 
     # Сохраняем токены в базу данных
-    tokens_repo = RefreshTokenRepositoryFactory(db).get_repository()
+    tokens_repo = await RefreshTokenRepositoryFactory(db).get_repository()
     await tokens_repo.delete_refresh_token(user.id)
     await tokens_repo.create_refresh_token(
         user_id=user.id, token=access_token, expires_at=refresh_token_expires_at
@@ -177,7 +177,7 @@ async def revoke_refresh_token(db: AsyncSession, acesss_token: str):
         raise get_user_not_found_exception()
 
     # Получаем refresh токен текущего пользователя
-    tokens_repo = RefreshTokenRepositoryFactory(db).get_repository()
+    tokens_repo = await RefreshTokenRepositoryFactory(db).get_repository()
     refresh_token_db = await tokens_repo.get_refresh_token_by_user_id(user.id)
     if refresh_token_db:
         await tokens_repo.revoke_refresh_token(refresh_token_db.id)
@@ -211,7 +211,7 @@ async def update_user_login_and_password(
         raise get_user_not_found_exception()
     
     user_repo = await UserRepositoryFactory(db).get_repository()
-    refresh_token_repo = RefreshTokenRepositoryFactory(db).get_repository()
+    refresh_token_repo = await RefreshTokenRepositoryFactory(db).get_repository()
 
     # Получаем пользователя по ID которого будем обновлять
     user = await user_repo.get_user_by_email_or_login(access_token.login)
@@ -234,7 +234,7 @@ async def update_user_login_and_password(
     updated_user = await user_repo.update_user(
         user.id, login=user_update.login, encrypted_password=encrypted_password
     )
-    keys_repo = KeyStorageRepositoryFactory(db).get_repository()
+    keys_repo = await KeyStorageRepositoryFactory(db).get_repository()
     await keys_repo.delete_keys(user.id)
     # Обновляем ключи шифрования пользователя
     new_keys = await keys_repo.save_keys(
