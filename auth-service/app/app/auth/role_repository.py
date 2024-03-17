@@ -143,8 +143,8 @@ class RoleRepository(AbstractRoleRepository):
         
         if user and user.role_id:
             cache = await self._get_cache(prefix_key="role:id", key=user.role_id)
-        if cache:
-                return cache
+            if cache:
+                    return cache
         
         if user and user.role_id:
             role_result = await self.db.execute(
