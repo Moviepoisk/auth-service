@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.encryption_facade import EncryptionFacade
@@ -28,7 +28,11 @@ async def get_client_details(request: Request):
     return {"ip": client_host, "user_agent": user_agent}
 
 
-async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
+async def register_new_user(
+    db: AsyncSession,
+    user_data: UserCreate,
+    request: Request
+) -> str:
     user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(user_data.login)
     if user:
@@ -67,8 +71,10 @@ async def register_new_user(db: AsyncSession, user_data: UserCreate) -> str:
         raise get_database_error_exception()
 
     login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    # Получаем IP-адрес и User-Agent клиента из запроса
+    ip, user_agent = get_client_details(request)
     await login_history_repo.create_login_history(
-        user_id=new_user.id, ip="127.0.0.1", user_agent="test"
+        user_id=new_user.id, ip=ip, user_agent=user_agent
     )
     return new_user.id
 
@@ -203,15 +209,13 @@ async def update_user_login_and_password(
     db: AsyncSession, user_update: UserLoginPasswordUpdate, token: str
 ) -> UserGet:
     acces_token_strategy = AccessTokenStrategy()
-    refresh_token_strategy = RefreshTokenStrategy()
 
     access_token = await acces_token_strategy.verify_token(token)
     if not access_token:
         # TODO не авторизован exception
         raise get_user_not_found_exception()
-    
+
     user_repo = await UserRepositoryFactory(db).get_repository()
-    refresh_token_repo = await RefreshTokenRepositoryFactory(db).get_repository()
 
     # Получаем пользователя по ID которого будем обновлять
     user = await user_repo.get_user_by_email_or_login(access_token.login)

@@ -19,10 +19,7 @@ router = APIRouter()
 
 @router.get("/roles", response_model=list[RoleGet])
 async def list_roles(
-    db: AsyncSession = Depends(get_session),
-    _=Depends(
-        role_required([settings.super_admin_role_name, settings.admin_role_name])
-    ),
+    db: AsyncSession = Depends(get_session)
 ):
     roles_list = await get_all_roles(db)
     return roles_list
