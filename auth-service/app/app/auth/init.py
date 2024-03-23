@@ -9,6 +9,8 @@ from app.schemas.role import RoleCreate
 from app.schemas.user import UserCreate
 
 # создание базовых ролей
+
+
 async def create_roles(db: AsyncSession, roles: list[RoleCreate]) -> None:
     role_repo = await RoleRepositoryFactory(db).get_repository()
     for role_data in roles:
