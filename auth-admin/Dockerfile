@@ -1,7 +1,7 @@
 # Use Python 3.12 image
 FROM python:3.12
 
-EXPOSE 8000
+EXPOSE 5000
 
 # create the app user
 RUN addgroup --system app && adduser --system --group app
