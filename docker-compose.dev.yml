@@ -1,21 +1,20 @@
-version: '3'
+version: "3"
 services:
-  # db
-  auth-db:
-    image: postgres:13-alpine
+  postgres:
+    image: postgres:16
     volumes:
-      - auth-db-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${AUTH_DB_NAME}
-      - POSTGRES_USER=${AUTH_DB_USER}
-      - POSTGRES_PASSWORD=${AUTH_DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - 5434:5432
-  # redis
-  auth-redis:
+
+  redis:
     image: redis
     ports:
-      - "6379:6379"
+      - "26379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       start_period: 30s
@@ -23,8 +22,8 @@ services:
       interval: 1s
       retries: 10
     volumes:
-      - auth_redis_data:/data
-  # api
+      - redis_data:/data
+
   auth-service:
     build:
       context: ./auth-service
@@ -32,17 +31,16 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AUTH_DB_NAME=${AUTH_DB_NAME}
-      - AUTH_DB_USER=${AUTH_DB_USER}
-      - AUTH_DB_PASSWORD=${AUTH_DB_PASSWORD}
-      - AUTH_DB_HOST=${AUTH_DB_HOST}
-      - AUTH_DB_PORT=${AUTH_DB_PORT}
-      - AUTH_REDIS_PORT=${AUTH_REDIS_PORT}
-      - AUTH_REDIS_HOST=${AUTH_REDIS_HOST}
-      - PROJECT_NAME=${PROJECT_NAME}
+      - AUTH_DB_NAME=${DB_NAME}
+      - AUTH_DB_USER=${DB_USER}
+      - AUTH_DB_PASSWORD=${DB_PASSWORD}
+      - AUTH_DB_HOST=${DB_HOST}
+      - AUTH_DB_PORT=${DB_PORT}
+      - AUTH_REDIS_PORT=${REDIS_PORT}
+      - AUTH_REDIS_HOST=${REDIS_HOST}
 
 volumes:
   # auth-db
-  auth-db-data:
+  postgres_data:
   # auth_redis
-  auth_redis_data:
+  redis_data:

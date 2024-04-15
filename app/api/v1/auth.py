@@ -1,8 +1,6 @@
-from typing import List
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.users import LoginHistoryDbModel
 
 
 from app.auth.auth_helpers import (
@@ -33,20 +31,16 @@ async def login_for_access_token(
     return tokens
 
 
-@router.get("/login_history", response_model=List[LoginHistoryDbModel])
+@router.get("/login_history",
+            # response_model=List[LoginHistoryDbModel]
+            )
 async def login_history(
     db: AsyncSession = Depends(get_session),
-    # Параметр "page" по умолчанию равен 1 и должен быть больше или равен 1
-    page: int = Query(1, ge=1),
-    # Количество элементов на странице от 1 до 100
-    per_page: int = Query(10, ge=1, le=100),
     token: str = Depends(OAUTH2_SCHEME)
 ):
-    # Подсчет смещения
-    offset = (page - 1) * per_page
 
     # Получение истории входа с учетом пагинации
-    login_history = await get_login_history(db, token, offset=offset, limit=per_page)
+    login_history = await get_login_history(db, token)
 
     return login_history
 
@@ -70,7 +64,8 @@ async def register_user(
 
 @router.post("/logout")
 async def user_logout(
-    db: AsyncSession = Depends(get_session), token: str = Depends(OAUTH2_SCHEME)
+    db: AsyncSession = Depends(get_session),
+    token: str = Depends(OAUTH2_SCHEME)
 ):
     await revoke_refresh_token(db, token)
     return "Logged out successfully"

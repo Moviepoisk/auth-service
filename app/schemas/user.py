@@ -1,5 +1,3 @@
-from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -10,6 +8,11 @@ class UserBase(BaseModel):
     first_name: str
     last_name: str
     email: str
+
+
+class UserLogin(BaseModel):
+    login: str
+    password: str
 
 
 class UserCreate(UserBase):

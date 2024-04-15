@@ -45,17 +45,16 @@ class UserRepository(AbstractUserRepository):
         self.key_prefix_id = "user:id"
         self.key_prefix_identifier = "user:identifier"
 
-
     async def _set_cache(self, prefix_key, key, model_data: UsersDbModel):
-        data = model_data.to_dict() # перевод в формат для хранения в редис
+        data = model_data.to_dict()  # перевод в формат для хранения в редис
         await self.cache_manager.set(f"{prefix_key}:{key}", data)
-    
-    async def _get_cache(self, prefix_key, key, model = UsersDbModel):
+
+    async def _get_cache(self, prefix_key, key, model=UsersDbModel):
         data = await self.cache_manager.get(f"{prefix_key}:{key}")
         if data:
-            return model(**data) # перевод в модель
+            return model(**data)  # перевод в модель
         return data
-    
+
     async def _invalidate_cache(self, prefix_key, key):
         await self.cache_manager.delete(f"{prefix_key}:{key}")
 
@@ -64,7 +63,7 @@ class UserRepository(AbstractUserRepository):
         self.db.add(new_user)
         await self.db.commit()
         await self.db.refresh(new_user)
-        
+
         # блок кеширования
         await self._set_cache(prefix_key=self.key_prefix_id, key=new_user.id, model_data=new_user)
         await self._set_cache(
@@ -75,11 +74,10 @@ class UserRepository(AbstractUserRepository):
         )
         return new_user
 
-
     async def get_user_by_email_or_login(
         self, identifier: str
     ) -> Optional[UsersDbModel]:
-        
+
         # блок кеширования
         cache = await self._get_cache(
             prefix_key=self.key_prefix_identifier, key=identifier
@@ -88,11 +86,12 @@ class UserRepository(AbstractUserRepository):
             return cache
 
         query = select(UsersDbModel).where(
-            (UsersDbModel.email == identifier) | (UsersDbModel.login == identifier)
+            (UsersDbModel.email == identifier) | (
+                UsersDbModel.login == identifier)
         )
         result = await self.db.execute(query)
         user = result.scalars().first()
-        
+
         # блок кеширования
         if user:
             await self._set_cache(
@@ -148,7 +147,7 @@ class UserRepository(AbstractUserRepository):
             await self._set_cache(prefix_key=self.key_prefix_id, key=user.id, model_data=user)
             await self._set_cache(prefix_key=self.key_prefix_identifier, key=user.email, model_data=user)
             await self._set_cache(prefix_key=self.key_prefix_identifier, key=user.login, model_data=user)
-            
+
             return user
         return None
 
@@ -159,7 +158,7 @@ class UserRepository(AbstractUserRepository):
         if user:
             await self.db.delete(user)
             await self.db.commit()
-            
+
             # блок кеширования
             await self._invalidate_cache(prefix_key=self.key_prefix_id, key=user_id)
             await self._invalidate_cache(prefix_key=self.key_prefix_identifier, key=user.email)

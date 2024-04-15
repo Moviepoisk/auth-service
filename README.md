@@ -1,5 +1,14 @@
 # Auth-service
 
+Запуск
+
+```
+poetry shell
+poetry install --no-root
+./run.sh
+```
+
+
 ```
 docker compose -f docker-compose.dev.yml up auth-service
 ```

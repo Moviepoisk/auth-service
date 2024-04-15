@@ -103,7 +103,8 @@ class AESEncryptor(DataEncryptor):
     @staticmethod
     def _decrypt_data(encrypted: EncryptedMessage, session_key: bytes) -> str:
         cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce=encrypted.nonce)
-        data = cipher_aes.decrypt_and_verify(encrypted.message, encrypted.digest)
+        data = cipher_aes.decrypt_and_verify(
+            encrypted.message, encrypted.digest)
         return data.decode()
 
 

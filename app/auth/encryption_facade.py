@@ -1,11 +1,8 @@
 import json
 from typing import Dict, Union
-from uuid import UUID
 
 # Вспомогательные классы и функции определены выше
-from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.encryption_strategy import (
     AESEncryptor,
