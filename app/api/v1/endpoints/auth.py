@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,11 +18,21 @@ from app.schemas.user import UserCreate
 router = APIRouter()
 
 OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="v1/tokens")
+oath2_bearer = OAuth2PasswordBearer(tokenUrl='v1/tokens')
+
+
+@router.post("/signup")
+async def register_user(
+    user_create_request: UserCreate,
+    db: AsyncSession = Depends(get_session)
+):
+    new_user_id = await register_new_user(db, user_create_request)
+    return new_user_id
 
 
 @router.post("/tokens", response_model=Tokens)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncSession = Depends(get_session)
 ):
     user = await authenticate_user(
@@ -51,15 +62,6 @@ async def refresh_access_and_refresh_tokens(
 ):
     tokens = await refresh_user_tokens(refresh_token_str, db)
     return tokens
-
-
-@router.post("/signup")
-async def register_user(
-    user_data: UserCreate,
-    db: AsyncSession = Depends(get_session),
-):
-    new_user_id = await register_new_user(db, user_data)
-    return new_user_id
 
 
 @router.post("/logout")

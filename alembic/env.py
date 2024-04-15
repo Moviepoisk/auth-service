@@ -4,23 +4,15 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from app.core.config import settings
 
-from app.models.users import UsersDbModel, RoleDbModel, LoginHistoryDbModel
-from app.core.config import settings  # добавил руками
+from app.models.users import combined_metadata
+# from app.infrastructure.db.database import Base
 
+# target_metadata = Base.metadata
 
-from sqlalchemy import MetaData
+# from app.models.users import UsersDbModel, RoleDbModel, LoginHistoryDbModel
 
-def combine_metadata(*args):
-    """
-    Объединяет несколько объектов MetaData в один.
-    """
-    combined_metadata = MetaData()
-    for metadata in args:
-        for table in metadata.tables.values():
-            # Используйте table.tometadata для копирования таблицы в combined_metadata
-            table.tometadata(combined_metadata)
-    return combined_metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -32,22 +24,12 @@ config.set_main_option('sqlalchemy.url', settings.database_url)  # добави�
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# # add your model's MetaData object here
-# # for 'autogenerate' support
-# # from myapp import mymodel
-# # target_metadata = mymodel.Base.metadata
-# target_metadata = [
-#     UsersDbModel.Base.metadata,
-#     RoleDbModel.Base.metadata,
-#     LoginHistoryDbModel.Base.metadata]
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
 # target_metadata = None
-
-# Объединение MetaData объектов
-target_metadata = combine_metadata(
-    UsersDbModel.metadata,
-    RoleDbModel.metadata,
-    LoginHistoryDbModel.metadata
-)
+target_metadata = combined_metadata()
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

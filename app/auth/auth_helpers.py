@@ -11,7 +11,6 @@ from app.auth.login_history_repository import LoginHistoryRepositoryFactory
 from app.auth.token_repository import RefreshTokenRepositoryFactory
 from app.auth.token_strategy import AccessTokenStrategy, RefreshTokenStrategy
 from app.auth.user_repository import UserRepositoryFactory
-from app.core.config import settings
 from app.exceptions.exceptions import (
     get_database_error_exception,
     get_incorrect_credentials_exception,
@@ -30,8 +29,7 @@ async def get_client_details(request: Request):
 
 async def register_new_user(
     db: AsyncSession,
-    user_data: UserCreate,
-    request: Request
+    user_data: UserCreate
 ) -> str:
     user_repo = await UserRepositoryFactory(db).get_repository()
     user = await user_repo.get_user_by_email_or_login(user_data.login)
@@ -70,12 +68,12 @@ async def register_new_user(
     if not new_keys:
         raise get_database_error_exception()
 
-    login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
+    # login_history_repo = LoginHistoryRepositoryFactory(db).get_repository()
     # Получаем IP-адрес и User-Agent клиента из запроса
-    ip, user_agent = get_client_details(request)
-    await login_history_repo.create_login_history(
-        user_id=new_user.id, ip=ip, user_agent=user_agent
-    )
+    # ip, user_agent = get_client_details(request)
+    # await login_history_repo.create_login_history(
+    #     user_id=new_user.id, ip=ip, user_agent=user_agent
+    # )
     return new_user.id
 
 
@@ -127,8 +125,8 @@ async def create_access_and_refresh_tokens(db: AsyncSession, login: str):
     access_token_strategy = AccessTokenStrategy()
     refresh_token_strategy = RefreshTokenStrategy()
 
-    access_token_expires = timedelta(minutes=settings.jwt_access_token_expire_minutes)
-    refresh_token_expires = timedelta(days=settings.jwt_refresh_token_expire_days)
+    access_token_expires = timedelta(minutes=60)
+    refresh_token_expires = timedelta(days=30)
     refresh_token_expires_at = datetime.utcnow() + refresh_token_expires
 
     access_token = await access_token_strategy.create_token(

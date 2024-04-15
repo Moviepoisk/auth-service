@@ -11,18 +11,6 @@ services:
     ports:
       - 5434:5432
 
-  redis:
-    image: redis
-    ports:
-      - "26379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      start_period: 30s
-      timeout: 10s
-      interval: 1s
-      retries: 10
-    volumes:
-      - redis_data:/data
 
   auth-service:
     build:
@@ -36,11 +24,7 @@ services:
       - AUTH_DB_PASSWORD=${DB_PASSWORD}
       - AUTH_DB_HOST=${DB_HOST}
       - AUTH_DB_PORT=${DB_PORT}
-      - AUTH_REDIS_PORT=${REDIS_PORT}
-      - AUTH_REDIS_HOST=${REDIS_HOST}
 
 volumes:
   # auth-db
   postgres_data:
-  # auth_redis
-  redis_data:

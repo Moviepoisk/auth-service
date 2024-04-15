@@ -8,12 +8,14 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     LargeBinary,
+    MetaData,
     String,
     Text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+
 
 Base = declarative_base()
 
@@ -28,7 +30,7 @@ class RoleDbModel(Base):
     def to_dict(self):
         return {
             "id": str(self.id),
-            "name": self.name,
+            "name": self.name1,
             "description": self.description,
             "created_at": self.created_at.isoformat(),
         }
@@ -47,7 +49,8 @@ class UsersDbModel(Base):
         UUID(as_uuid=True), ForeignKey("roles.id", ondelete="CASCADE"), nullable=True
     )
     role = relationship("RoleDbModel", back_populates="users")
-    login_histories = relationship("LoginHistoryDbModel", back_populates="user")
+    login_histories = relationship(
+        "LoginHistoryDbModel", back_populates="user")
 
     def to_dict(self):
         return {
@@ -65,7 +68,8 @@ class UsersDbModel(Base):
 class LoginHistoryDbModel(Base):
     __tablename__ = "login_history"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey(
+        "users.id"), nullable=False)
     ip = Column(String(255), nullable=False)
     user_agent = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -85,11 +89,13 @@ class RefreshTokenDbModel(Base):
     __tablename__ = "refresh_tokens"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     token = Column(Text, nullable=False, unique=True)  # Сам refresh токен
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey(
+        "users.id"), nullable=False)
     expires_at = Column(
         DateTime, nullable=False
     )  # Время истечения срока действия токена
-    created_at = Column(DateTime, default=datetime.utcnow)  # Время создания токена
+    # Время создания токена
+    created_at = Column(DateTime, default=datetime.utcnow)
     revoked = Column(Boolean, default=False)  # Статус отзыва токена
     user = relationship("UsersDbModel", back_populates="refresh_tokens")
 
@@ -153,3 +159,19 @@ UsersDbModel.encryption_keys = relationship(
 # Indexes
 Index("idx_email", UsersDbModel.email)
 Index("idx_login", UsersDbModel.login)
+
+
+def combined_metadata():
+    """
+    Объединяет несколько объектов MetaData в один.
+    """
+    result = MetaData()
+    metadatas = [
+        UsersDbModel.metadata, 
+        RoleDbModel.metadata, 
+        LoginHistoryDbModel.metadata]
+    for metadata in metadatas:
+        for table in metadata.tables.values():
+            table.tometadata(result)
+    return result
+

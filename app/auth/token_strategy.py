@@ -24,14 +24,14 @@ class AccessTokenStrategy(TokenStrategy):
         expire = datetime.utcnow() + expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
-            to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+            to_encode, settings.JWT_SECRET_KEY, algorithm='HS256'
         )
         return encoded_jwt
 
     async def verify_token(self, token: str) -> AccessTokenData:
         try:
             payload = jwt.decode(
-                token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+                token, settings.JWT_SECRET_KEY, algorithms=['HS256']
             )
             login: str = payload.get("sub")
             if not login:
@@ -48,14 +48,14 @@ class RefreshTokenStrategy(TokenStrategy):
         expire = datetime.utcnow() + expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
-            to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+            to_encode, settings.JWT_SECRET_KEY, algorithm='HS256'
         )
         return encoded_jwt
 
     async def verify_token(self, token: str) -> RefreshTokenData:
         try:
             payload = jwt.decode(
-                token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+                token, settings.JWT_SECRET_KEY, algorithms=['HS256']
             )
             login: str = payload.get("sub")
             if not login:

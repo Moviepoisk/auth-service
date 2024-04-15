@@ -3,25 +3,26 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class UserBase(BaseModel):
+class UserLogin(BaseModel):
+    login: str
+    password: str
+
+
+class UserCreate(BaseModel):
+    password: str
     login: str
     first_name: str
     last_name: str
     email: str
 
 
-class UserLogin(BaseModel):
-    login: str
-    password: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserGet(UserBase):
+class UserGet(BaseModel):
     id: UUID
-
+    login: str
+    first_name: str
+    last_name: str
+    email: str
+    
     class Config:
         from_attributes = True
 
