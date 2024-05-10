@@ -19,26 +19,13 @@ ENV PYTHONUNBUFFERED 1
 ENV ENVIRONMENT prod
 ENV TESTING 0
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
-
 # Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./pyproject.toml ./poetry.lock* /app/
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
 
-# Allow installing dev dependencies to run tests
-ARG INSTALL_DEV=false
+COPY . .
 
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
-
-COPY ./app /app
-COPY ./run.sh .
-
-RUN chmod +x run.sh
-
-ENV PYTHONPATH=/app
+# ENV PYTHONPATH=/app
 
 # chown all the files to the app user
 RUN chown -R app:app $HOME
